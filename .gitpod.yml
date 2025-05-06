@@ -1,0 +1,20 @@
+image:
+  file: .gitpod.Dockerfile
+
+tasks:
+  - init: |
+      sudo k3s server &
+      sleep 10
+      export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+      echo "Waiting for K3s node..."
+      kubectl wait node --for=condition=Ready --timeout=60s
+      echo "Installing Argo CD..."
+      kubectl create namespace argocd
+      kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+      sleep 20
+      kubectl apply -f argocd/app.yaml
+    command: |
+      export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+      kubectl get all -A
+      echo "Port-forward Argo CD with:"
+      echo "kubectl port-forward svc/argocd-server -n argocd 8080:443"
